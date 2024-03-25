@@ -48,7 +48,7 @@ foreach ($template in $templates) {
 	#Import and publish templates
     New-ADCSTemplate -DisplayName $templateName -JSON (Get-Content .\$templateName.json -Raw) -Publish
 	# Issue templates
-    Set-ADCSTemplateACL -DisplayName $templateName -Identity 'certipied\domain users' -Enroll -AutoEnroll
+    Set-ADCSTemplateACL -DisplayName $templateName -Identity 'gamers\domain users' -Enroll -AutoEnroll
 
 }
 
@@ -58,7 +58,7 @@ Write-Host "[*] Vulnerable templates published and issued."
 # separation needed to ensure it's not vulnerable
 Invoke-WebRequest -URI "https://raw.githubusercontent.com/arth0sz/Practice-AD-CS-Domain-Escalation/main/Vulnerable-Templates/IP-ssl.json" -OutFile .\IP-ssl.json
 New-ADCSTemplate -DisplayName IP-ssl -JSON (Get-Content .\IP-ssl.json -Raw) -Publish
-Set-ADCSTemplateACL -DisplayName IP-ssl -Identity 'certipied\domain admins' -Enroll -AutoEnroll
+Set-ADCSTemplateACL -DisplayName IP-ssl -Identity 'gamers\domain admins' -Enroll -AutoEnroll
 
 cd \
 Remove-Item -Path ADCS -Recurse
