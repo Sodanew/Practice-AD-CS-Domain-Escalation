@@ -74,7 +74,7 @@ if (-not (Get-Module -Name ActiveDirectory -ErrorAction SilentlyContinue)) {
     Import-Module ActiveDirectory
 }
 
-Install-ADDSForest -SkipPreChecks -CreateDnsDelegation:$false -DomainName certipied.local -DomainNetBIOSName Certipied -InstallDNS -SafeModeAdministratorPassword (Convertto-SecureString -AsPlainText "53jFCM%U*TUpxNPCe%" -Force) -Force -WarningAction SilentlyContinue | Out-Null
+Install-ADDSForest -SkipPreChecks -CreateDnsDelegation:$false -DomainName gamers.com -DomainNetBIOSName Certipied -InstallDNS -SafeModeAdministratorPassword (Convertto-SecureString -AsPlainText "53jFCM%U*TUpxNPCe%" -Force) -Force -WarningAction SilentlyContinue | Out-Null
 
 Write-Host "[*] Creating new forest."
 Write-Host "[*] Promoting to domain controller."
