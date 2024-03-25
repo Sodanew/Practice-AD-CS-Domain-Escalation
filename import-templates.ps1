@@ -29,7 +29,7 @@ $fileNames = @(
     "Vuln-ESC4.json"
 )
 
-$baseURL = "https://raw.githubusercontent.com/arth0sz/Practice-AD-CS-Domain-Escalation/main/Vulnerable-Templates/"
+$baseURL = "https://raw.githubusercontent.com/Sodanew/Practice-AD-CS-Domain-Escalation/main/Vulnerable-Templates/"
 
 # Loop through each filename and download the corresponding file
 foreach ($fileName in $fileNames) {
@@ -56,7 +56,7 @@ Write-Host "[*] Vulnerable templates published and issued."
 
 # Download self-signed ssl certificate template files from GitHub repo
 # separation needed to ensure it's not vulnerable
-Invoke-WebRequest -URI "https://raw.githubusercontent.com/arth0sz/Practice-AD-CS-Domain-Escalation/main/Vulnerable-Templates/IP-ssl.json" -OutFile .\IP-ssl.json
+Invoke-WebRequest -URI "https://raw.githubusercontent.com/Sodanew/Practice-AD-CS-Domain-Escalation/main/Vulnerable-Templates/IP-ssl.json" -OutFile .\IP-ssl.json
 New-ADCSTemplate -DisplayName IP-ssl -JSON (Get-Content .\IP-ssl.json -Raw) -Publish
 Set-ADCSTemplateACL -DisplayName IP-ssl -Identity 'gamers\domain admins' -Enroll -AutoEnroll
 
